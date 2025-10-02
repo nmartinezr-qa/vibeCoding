@@ -40,11 +40,23 @@ function RecipeCard({ title, category, image }: RecipeCardProps) {
   );
 }
 
-export default async function Home() {
+export default async function Home(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await props.searchParams;
+  const activeCategory =
+    typeof sp.category === "string" ? sp.category : undefined;
+
   const supabase = await getServerSupabase();
-  const { data, error } = await supabase
+  let query = supabase
     .from("recipe")
-    .select("id,title,category,image_url,created_at")
+    .select("id,title,category,image_url,created_at");
+
+  if (activeCategory && activeCategory !== "All") {
+    query = query.eq("category", activeCategory);
+  }
+
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .limit(12);
 
@@ -144,17 +156,27 @@ export default async function Home() {
               "Desserts",
               "Breakfast",
               "Snack",
-            ].map((c) => (
-              <li key={c}>
-                <button
-                  type="button"
-                  className="px-3 h-8 rounded-full border border-black/[.08] dark:border-white/[.145] text-xs hover:bg-[#f2f2f2] dark:hover:bg-[#111]"
-                  aria-pressed={c === "All"}
-                >
-                  {c}
-                </button>
-              </li>
-            ))}
+            ].map((c) => {
+              const isActive = (activeCategory ?? "All") === c;
+              const href =
+                c === "All" ? "/" : `/?category=${encodeURIComponent(c)}`;
+              return (
+                <li key={c}>
+                  <a
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={
+                      `px-3 h-8 rounded-full text-xs inline-flex items-center justify-center font-medium ` +
+                      (isActive
+                        ? `bg-foreground text-background border border-transparent shadow-sm`
+                        : `border border-black/[.08] dark:border-white/[.145] text-black/80 dark:text-white/80 hover:bg-[#f2f2f2] dark:hover:bg-[#111]`)
+                    }
+                  >
+                    {c}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
