@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getServerSupabase } from "@/src/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Header from "../components/header";
@@ -5,18 +6,27 @@ import Footer from "../components/footer";
 
 export const dynamic = "force-dynamic";
 
-async function signInAction(formData: FormData) {
+async function signInAction(
+  formData: FormData
+): Promise<void | { error?: string }> {
   "use server";
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "").trim();
 
   const supabase = await getServerSupabase();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  console.log("LOGIN RESPONSE:", { data, error });
+
+  if (error || !data?.user) {
+    console.log("LOGIN FAILED");
+    return { error: error?.message || "Invalid login credentials" };
   }
 
+  console.log("LOGIN SUCCESS, redirecting...");
   redirect("/");
 }
 
@@ -41,13 +51,12 @@ export default async function LoginPage(props: {
           </p>
         ) : null}
 
-        <form action={signInAction} className="mt-6 flex flex-col gap-3">
+        <form action={signInAction as any} className="mt-6 flex flex-col gap-3">
           <label className="text-sm">
             <span className="sr-only">Email</span>
             <input
               name="email"
-              type="email"
-              required
+              type="text"
               placeholder="you@example.com"
               className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30 
               border border-black/[.08] dark:border-white/[.145] 
@@ -60,7 +69,6 @@ export default async function LoginPage(props: {
             <input
               name="password"
               type="password"
-              required
               placeholder="Your password"
               className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30 
               border border-black/[.08] dark:border-white/[.145] 

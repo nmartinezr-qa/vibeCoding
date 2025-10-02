@@ -26,13 +26,15 @@ export default function SignupPage() {
 
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚡ debe estar en .env
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     const { error: profileError } = await supabaseAdmin.from("profile").upsert({
       id: data.user.id,
       fullname,
       username,
+      email,
+      password,
     });
 
     if (profileError) {
