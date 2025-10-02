@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getServerSupabase } from "@/src/lib/supabase/server";
 import type { Recipe } from "@/src/types/database.types";
+import Footer from "../app/components/footer";
 
 interface RecipeCardProps {
   title: string;
@@ -10,8 +11,6 @@ interface RecipeCardProps {
 
 function toDirectImageUrl(url?: string | null) {
   if (!url) return null;
-  // Convert Google Drive share URLs to direct view URLs
-  // e.g. https://drive.google.com/file/d/<id>/view -> https://drive.google.com/uc?export=view&id=<id>
   const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (m?.[1]) {
     return `https://drive.google.com/uc?export=view&id=${m[1]}`;
@@ -62,6 +61,7 @@ export default async function Home(props: {
 
   return (
     <div className="font-sans min-h-screen">
+      {/* Header */}
       <header className="border-b border-black/[.08] dark:border-white/[.145]">
         <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -91,6 +91,7 @@ export default async function Home(props: {
         </div>
       </header>
 
+      {/* Main */}
       <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
         {/* Hero */}
         <section
@@ -132,7 +133,7 @@ export default async function Home(props: {
           </form>
         </section>
 
-        {/* Categories */}
+        {/* CTA */}
         <div className="mt-4">
           <a
             href="/share"
@@ -216,14 +217,8 @@ export default async function Home(props: {
         </section>
       </main>
 
-      <footer className="border-t border-black/[.08] dark:border-white/[.145] mt-10">
-        <div className="mx-auto max-w-6xl px-6 py-8 text-xs text-black/60 dark:text-white/60 flex items-center justify-between">
-          <p>© {new Date().getFullYear()} VibeCooking</p>
-          <a className="hover:underline underline-offset-4" href="#about">
-            About
-          </a>
-        </div>
-      </footer>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
