@@ -92,7 +92,7 @@ export default async function Home(props: {
       </header>
 
       {/* Main */}
-      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14 pt-14">
         {/* Hero */}
         <section
           aria-labelledby="hero-heading"
