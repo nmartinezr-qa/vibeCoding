@@ -1,41 +1,48 @@
 import { getServerSupabase } from "@/src/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import ClientSignupForm from "./ClientSignupForm";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-async function signUpAction(formData: FormData) {
-  "use server";
-  const email = String(formData.get("email") || "").trim();
-  const password = String(formData.get("password") || "").trim();
-  const fullname = String(formData.get("fullname") || "").trim();
-  const username = String(formData.get("username") || "").trim();
+export default function SignupPage() {
+  async function signUpAction(formData: FormData) {
+    "use server";
 
-  const supabase = await getServerSupabase();
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "").trim();
+    const fullname = String(formData.get("fullname") || "").trim();
+    const username = String(formData.get("username") || "").trim();
 
-  const { data: existing } = await supabase
-    .from("profile")
-    .select("id")
-    .eq("username", username)
-    .limit(1)
-    .maybeSingle();
+    const supabase = await getServerSupabase();
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
-  if (existing) return { usernameTaken: true };
+    if (error || !data.user) {
+      console.error("Signup failed:", error);
+      return;
+    }
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error || !data.user) return { signUpError: error?.message || "Failed" };
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚡ debe estar en .env
+    );
 
-  await supabase.from("profile").upsert({
-    id: data.user.id,
-    fullname,
-    username,
-  });
+    const { error: profileError } = await supabaseAdmin.from("profile").upsert({
+      id: data.user.id,
+      fullname,
+      username,
+    });
 
-  return { success: true };
-}
+    if (profileError) {
+      console.error("Profile creation failed:", profileError);
+      return;
+    }
 
-export default async function SignupPage() {
+    redirect("/signup/success");
+  }
+
   return (
     <>
       <Header />
@@ -44,12 +51,6 @@ export default async function SignupPage() {
         <div className="mt-6">
           <ClientSignupForm action={signUpAction} />
         </div>
-        <p className="mt-6 text-sm text-center text-black/60 dark:text-white/60">
-          Already have an account?{" "}
-          <a className="underline hover:text-blue-600" href="/login">
-            Log in
-          </a>
-        </p>
       </div>
       <Footer />
     </>
