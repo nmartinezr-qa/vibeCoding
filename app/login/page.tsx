@@ -19,14 +19,10 @@ async function signInAction(
     password,
   });
 
-  console.log("LOGIN RESPONSE:", { data, error });
-
   if (error || !data?.user) {
-    console.log("LOGIN FAILED");
     return { error: error?.message || "Invalid login credentials" };
   }
 
-  console.log("LOGIN SUCCESS, redirecting...");
   redirect("/");
 }
 
