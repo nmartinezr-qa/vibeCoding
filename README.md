@@ -34,3 +34,28 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Supabase Setup
+
+1. Create a Supabase project and copy these values from Project Settings → API:
+
+   - URL → `NEXT_PUBLIC_SUPABASE_URL`
+   - anon key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+2. Create a `.env.local` in the project root:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+3. Tables (from your schema image):
+
+   - `profile(id uuid primary key references auth.users, username text, fullname text, created_at timestamptz default now(), updated_at timestamptz default now())`
+   - `recipe(id uuid primary key default gen_random_uuid(), created_at timestamptz default now(), user_id uuid references auth.users, title text, description text, ingredients text, coocking_time int4, difficulty text, category text, instructions text)`
+
+4. Develop
+
+```
+npm run dev
+```

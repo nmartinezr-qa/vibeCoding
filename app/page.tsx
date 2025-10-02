@@ -1,102 +1,206 @@
 import Image from "next/image";
+import { getServerSupabase } from "@/src/lib/supabase/server";
+import type { Recipe } from "@/src/types/database.types";
 
-export default function Home() {
+interface RecipeCardProps {
+  title: string;
+  category: string | null;
+  image?: string | null;
+}
+
+function toDirectImageUrl(url?: string | null) {
+  if (!url) return null;
+  // Convert Google Drive share URLs to direct view URLs
+  // e.g. https://drive.google.com/file/d/<id>/view -> https://drive.google.com/uc?export=view&id=<id>
+  const m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (m?.[1]) {
+    return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  }
+  return url;
+}
+
+function RecipeCard({ title, category, image }: RecipeCardProps) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <article className="group rounded-xl border border-black/[.08] dark:border-white/[.145] overflow-hidden bg-white/60 dark:bg-black/20 backdrop-blur">
+      <div className="relative aspect-[4/3] bg-[#f2f2f2] dark:bg-[#111]">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          src={toDirectImageUrl(image) || "/vercel.svg"}
+          alt={title}
+          fill
+          className="object-contain p-6"
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </div>
+      <div className="p-4 flex flex-col gap-1">
+        <h3 className="text-sm font-semibold tracking-[-0.01em]">{title}</h3>
+        <p className="text-xs text-black/60 dark:text-white/60">
+          {category ?? "Uncategorized"}
+        </p>
+      </div>
+    </article>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+export default async function Home() {
+  const supabase = await getServerSupabase();
+  const { data, error } = await supabase
+    .from("recipe")
+    .select("id,title,category,image_url,created_at")
+    .order("created_at", { ascending: false })
+    .limit(12);
+
+  return (
+    <div className="font-sans min-h-screen">
+      <header className="border-b border-black/[.08] dark:border-white/[.145]">
+        <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Image
+              src="/next.svg"
+              alt="Logo"
+              width={120}
+              height={26}
               className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <span className="sr-only">VibeCooking</span>
+          </div>
+          <nav className="hidden sm:flex items-center gap-3 text-sm">
+            <a
+              className="inline-flex items-center justify-center h-9 px-4 rounded-full border border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#111]"
+              href="/login"
+            >
+              Login
+            </a>
+            <a
+              className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background hover:opacity-90"
+              href="/signup"
+            >
+              Sign up
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+        {/* Hero */}
+        <section
+          aria-labelledby="hero-heading"
+          className="text-center sm:text-left"
+        >
+          <h1
+            id="hero-heading"
+            className="text-3xl sm:text-4xl font-semibold tracking-tight"
           >
-            Read our docs
+            Share and discover delicious recipes
+          </h1>
+          <p className="mt-2 text-sm text-black/70 dark:text-white/70 max-w-2xl mx-auto sm:mx-0">
+            A simple place to upload your favorite dishes and explore new ideas
+            from the community.
+          </p>
+
+          {/* Search */}
+          <form className="mt-6" role="search" aria-label="Search recipes">
+            <div className="flex items-center gap-2">
+              <label htmlFor="search" className="sr-only">
+                Search recipes
+              </label>
+              <input
+                id="search"
+                name="search"
+                type="search"
+                placeholder="Search recipes, ingredients..."
+                className="w-full sm:w-[480px] h-11 rounded-full px-4 text-sm bg-white dark:bg-black/30 border border-black/[.08] dark:border-white/[.145] outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
+              />
+              <button
+                type="submit"
+                className="h-11 px-4 rounded-full text-sm font-medium bg-foreground text-background hover:opacity-90"
+                aria-label="Search"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {/* Categories */}
+        <div className="mt-4">
+          <a
+            href="/share"
+            className="inline-flex items-center justify-center h-11 px-5 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90"
+          >
+            Start sharing
           </a>
         </div>
+
+        {/* Categories */}
+        <section
+          id="categories"
+          aria-label="Recipe categories"
+          className="mt-8"
+        >
+          <ul className="flex flex-wrap gap-2">
+            {[
+              "All",
+              "Appetizers",
+              "Main",
+              "Desserts",
+              "Breakfast",
+              "Snack",
+            ].map((c) => (
+              <li key={c}>
+                <button
+                  type="button"
+                  className="px-3 h-8 rounded-full border border-black/[.08] dark:border-white/[.145] text-xs hover:bg-[#f2f2f2] dark:hover:bg-[#111]"
+                  aria-pressed={c === "All"}
+                >
+                  {c}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Grid */}
+        <section
+          id="recipes"
+          aria-labelledby="recipes-heading"
+          className="mt-8"
+        >
+          <h2 id="recipes-heading" className="sr-only">
+            Recipes
+          </h2>
+          {error ? (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Failed to load recipes.
+            </p>
+          ) : !data || data.length === 0 ? (
+            <p className="text-sm text-black/60 dark:text-white/60">
+              No recipes yet. Be the first to share!
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {data.map(
+                (
+                  r: Pick<Recipe, "title" | "category" | "id" | "image_url">
+                ) => (
+                  <RecipeCard
+                    key={r.id}
+                    title={r.title ?? "Untitled"}
+                    category={r.category}
+                    image={r.image_url}
+                  />
+                )
+              )}
+            </div>
+          )}
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="border-t border-black/[.08] dark:border-white/[.145] mt-10">
+        <div className="mx-auto max-w-6xl px-6 py-8 text-xs text-black/60 dark:text-white/60 flex items-center justify-between">
+          <p>© {new Date().getFullYear()} VibeCooking</p>
+          <a className="hover:underline underline-offset-4" href="#about">
+            About
+          </a>
+        </div>
       </footer>
     </div>
   );
