@@ -50,6 +50,7 @@ export default function ClientSignupForm({
         type="text"
         placeholder="Full name"
         className="w-full h-11 rounded-lg px-3 border"
+        suppressHydrationWarning
       />
       <input
         name="username"
@@ -58,6 +59,7 @@ export default function ClientSignupForm({
         onChange={(e) => setUsername(e.target.value)}
         placeholder="Username"
         className="w-full h-11 rounded-lg px-3 border"
+        suppressHydrationWarning
       />
       <input
         name="email"
@@ -69,6 +71,7 @@ export default function ClientSignupForm({
         }}
         placeholder="you@example.com"
         className="w-full h-11 rounded-lg px-3 border"
+        suppressHydrationWarning
       />
       {showEmailError && (
         <p className="text-xs text-red-600">Invalid email format</p>
@@ -80,6 +83,7 @@ export default function ClientSignupForm({
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Create a password"
         className="w-full h-11 rounded-lg px-3 border"
+        suppressHydrationWarning
       />
       {showRules && (
         <ul className="text-xs border p-2">

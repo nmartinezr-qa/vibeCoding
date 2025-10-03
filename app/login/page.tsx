@@ -1,36 +1,48 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getServerSupabase } from "@/src/lib/supabase/server";
-import { redirect } from "next/navigation";
-import Header from "../components/header";
+"use client";
+
+import { signInAction } from "./actions";
+import Header from "../components/loginHeader";
 import Footer from "../components/footer";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getBrowserSupabase } from "@/src/lib/supabase/client";
+import { useUser } from "@/src/hooks/useUser";
 
-export const dynamic = "force-dynamic";
+export default function LoginPage() {
+  const { user, loading } = useUser();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-async function signInAction(
-  formData: FormData
-): Promise<void | { error?: string }> {
-  "use server";
-  const email = String(formData.get("email") || "").trim();
-  const password = String(formData.get("password") || "").trim();
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
 
-  const supabase = await getServerSupabase();
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const handleSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    setError(null);
 
-  if (error || !data?.user) {
-    return { error: error?.message || "Invalid login credentials" };
-  }
+    try {
+      const session = await signInAction(formData);
 
-  redirect("/");
-}
-
-export default async function LoginPage(props: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await props.searchParams;
-  const error = typeof sp.error === "string" ? sp.error : undefined;
+      if (session) {
+        const supabase = getBrowserSupabase();
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -38,25 +50,33 @@ export default async function LoginPage(props: {
       <div className="mx-auto max-w-md px-6 pt-20">
         <h1 className="text-2xl font-semibold text-center">Log in</h1>
 
-        {error ? (
+        {error && (
           <p
             className="mt-3 text-sm text-red-600 dark:text-red-400 text-center"
             role="alert"
           >
             {error}
           </p>
-        ) : null}
+        )}
 
-        <form action={signInAction as any} className="mt-6 flex flex-col gap-3">
+        <form
+          className="mt-6 flex flex-col gap-3"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            await handleSubmit(formData);
+          }}
+        >
           <label className="text-sm">
             <span className="sr-only">Email</span>
             <input
               name="email"
               type="text"
               placeholder="you@example.com"
-              className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30 
-              border border-black/[.08] dark:border-white/[.145] 
+              className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30
+              border border-black/[.08] dark:border-white/[.145]
               outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
+              suppressHydrationWarning
             />
           </label>
 
@@ -66,17 +86,19 @@ export default async function LoginPage(props: {
               name="password"
               type="password"
               placeholder="Your password"
-              className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30 
-              border border-black/[.08] dark:border-white/[.145] 
+              className="w-full h-11 rounded-lg px-3 bg-white dark:bg-black/30
+              border border-black/[.08] dark:border-white/[.145]
               outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
+              suppressHydrationWarning
             />
           </label>
 
           <button
             type="submit"
-            className="h-11 rounded-lg bg-foreground text-background font-medium hover:opacity-90"
+            disabled={isLoading}
+            className="h-11 rounded-lg bg-foreground text-background font-medium hover:opacity-90 disabled:opacity-50"
           >
-            Log in
+            {isLoading ? "Logging in..." : "Log in"}
           </button>
         </form>
 

@@ -1,7 +1,7 @@
 import { getServerSupabase } from "@/src/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import ClientSignupForm from "./ClientSignupForm";
-import Header from "../components/header";
+import Header from "../components/loginHeader";
 import Footer from "../components/footer";
 import { redirect } from "next/navigation";
 
