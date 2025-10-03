@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getServerSupabase } from "@/src/lib/supabase/server";
-import type { Recipe } from "../../src/types/database.types";
 import DashboardClient from "./dashboard-client";
 
 export default async function DashboardContent(props: {

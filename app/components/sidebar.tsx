@@ -95,114 +95,107 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   ];
 
   return (
-    <>
-      {/* Overlay para móvil */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onToggle}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed lg:static inset-y-0 left-0 z-50
-          w-72 bg-white/80 dark:bg-black/20 backdrop-blur-md border-r border-black/[.08] dark:border-white/[.145]
-          transform transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0
-        `}
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-40
+        ${isOpen ? "w-72" : "w-24"}
+        bg-white/80 dark:bg-black/20 backdrop-blur-md
+        border-r border-black/[.08] dark:border-white/[.145]
+        transition-[width] duration-300 ease-in-out
+        flex flex-col relative
+      `}
+    >
+      {/* Pestaña: ahora por fuera del borde */}
+      <button
+        onClick={onToggle}
+        className="
+          absolute top-1/2 -translate-y-1/2 -right-6
+          w-6 h-16 rounded-r-lg
+          bg-blue-600 text-white shadow-md
+          hover:bg-blue-700 transition-colors
+          flex items-center justify-center
+        "
+        aria-label={isOpen ? "Contraer menú" : "Expandir menú"}
       >
-        {/* Header del sidebar */}
-        <div className="flex items-center justify-between p-6 border-b border-black/[.08] dark:border-white/[.145]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-blue-600 dark:text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            {isOpen && (
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  VibeCooking
-                </h2>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Gestión de Recetas
-                </p>
-              </div>
-            )}
-          </div>
-          <button
-            onClick={onToggle}
-            className="p-2 rounded-lg hover:bg-white/60 dark:hover:bg-white/10 text-gray-600 dark:text-gray-400 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-        </div>
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d={isOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}
+          />
+        </svg>
+      </button>
 
-        {/* Menu items */}
-        <nav className="p-6">
-          <ul className="space-y-3">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
+      {/* Header fijo */}
+      <div className="h-16 px-4 border-b border-black/[.08] dark:border-white/[.145] flex items-center justify-center">
+        {isOpen ? (
+          <div
+            className={`
+              flex flex-col text-center
+              opacity-0 transition-opacity duration-200 delay-150
+              ${isOpen ? "opacity-100" : ""}
+            `}
+          >
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+              VibeCooking
+            </h2>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Gestión de Recetas
+            </p>
+          </div>
+        ) : (
+          <span className="text-sm font-bold tracking-widest uppercase bg-blue-600 text-white px-2 py-1 rounded-md shadow-sm">
+            VC
+          </span>
+        )}
+      </div>
+
+      {/* Menú */}
+      <nav className="flex-1 px-3 py-3">
+        <ul className="space-y-2">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <li key={item.id}>
+                <Link
+                  href={item.href}
+                  className={`
+                    h-12 flex items-center gap-3 px-3 rounded-lg text-sm font-medium
+                    transition-colors
+                    border
+                    ${
+                      isActive
+                        ? "bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-white/5 border-transparent"
+                    }
+                  `}
+                >
+                  <div
                     className={`
-                      group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                      w-10 h-10 flex-shrink-0 rounded-md
+                      flex items-center justify-center
                       ${
                         isActive
-                          ? "bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-white/5 hover:scale-[1.02]"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                       }
                     `}
                   >
-                    <div
-                      className={`
-                        w-10 h-10 rounded-full flex items-center justify-center transition-colors
-                        ${
-                          isActive
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
-                        }
-                      `}
-                    >
-                      {item.icon}
-                    </div>
-                    {isOpen && (
-                      <span className="truncate font-medium">{item.label}</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
-    </>
+                    {item.icon}
+                  </div>
+                  {isOpen && <span className="truncate">{item.label}</span>}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
   );
 }
