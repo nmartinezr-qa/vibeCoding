@@ -54,7 +54,7 @@ export default function DashboardClient({
   error: { message?: string } | null;
   activeCategory?: string;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className="font-sans min-h-screen flex">
@@ -65,7 +65,7 @@ export default function DashboardClient({
       />
 
       {/* Main content */}
-      <div className="flex-1">
+      <div className="flex-1 lg:ml-72">
         {/* Header */}
         <header className="border-b border-black/[.08] dark:border-white/[.145]">
           <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
