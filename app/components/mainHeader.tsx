@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/src/lib/supabase/client";
 
-export default function MainHeader() {
+interface MainHeaderProps {
+  offsetLeft?: string; // ancho dinámico del sidebar
+  fixed?: boolean; // si debe ser fixed o no
+}
+
+export default function MainHeader({
+  offsetLeft = "0rem",
+  fixed = false,
+}: MainHeaderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = getBrowserSupabase();
@@ -17,6 +25,7 @@ export default function MainHeader() {
           data: { session },
           error,
         } = await supabase.auth.getSession();
+
         console.log("🔍 Current session check:", {
           hasSession: !!session,
           userId: session?.user?.id,
@@ -60,7 +69,15 @@ export default function MainHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full h-14 flex items-center justify-between px-6 border-b border-black/10 dark:border-white/10 bg-white dark:bg-black z-50">
+    <header
+      className={`
+        ${fixed ? "fixed top-0" : "relative"} 
+        right-0 h-14 flex items-center justify-between px-6 
+        border-b border-black/10 dark:border-white/10 
+        bg-white dark:bg-black z-50 transition-all duration-300
+      `}
+      style={{ left: offsetLeft }}
+    >
       <div className="text-lg font-semibold text-foreground">RecipeShare</div>
 
       {!isLoading && isAuthenticated && (

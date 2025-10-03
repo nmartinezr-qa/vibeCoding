@@ -4,8 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import type { Recipe } from "../../src/types/database.types";
 import Footer from "../components/footer";
-import LogoutButton from "../components/logoutbutton";
 import Sidebar from "../components/sidebar";
+import MainHeader from "../components/mainHeader";
 
 interface RecipeCardProps {
   title: string;
@@ -65,36 +65,12 @@ export default function DashboardClient({
       />
 
       {/* Main content */}
-      <div
-        className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? "ml-72" : "ml-16"
-        }`}
-      >
-        {/* Header */}
-        <header className="border-b border-black/[.08] dark:border-white/[.145]">
-          <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/next.svg"
-                alt="Logo"
-                width={120}
-                height={26}
-                className="dark:invert"
-              />
-              <span className="sr-only">VibeCooking</span>
-            </div>
-
-            <nav className="flex items-center gap-3 text-sm">
-              <span className="text-black/70 dark:text-white/70 text-xs">
-                {user?.email}
-              </span>
-              <LogoutButton />
-            </nav>
-          </div>
-        </header>
+      <div className="flex-1 transition-all duration-300">
+        {/* Header con offset */}
+        <MainHeader offsetLeft={sidebarOpen ? "18rem" : "6rem"} fixed />
 
         {/* Main */}
-        <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14 pt-14">
+        <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14 pt-20">
           {/* Hero */}
           <section
             aria-labelledby="hero-heading"
