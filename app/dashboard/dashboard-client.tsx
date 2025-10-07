@@ -2,12 +2,14 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Recipe } from "../../src/types/database.types";
 import Footer from "../components/footer";
 import Sidebar from "../components/sidebar";
 import MainHeader from "../components/mainHeader";
 
 interface RecipeCardProps {
+  id: string;
   title: string;
   category: string | null;
   image?: string | null;
@@ -22,24 +24,26 @@ function toDirectImageUrl(url?: string | null) {
   return url;
 }
 
-function RecipeCard({ title, category, image }: RecipeCardProps) {
+function RecipeCard({ id, title, category, image }: RecipeCardProps) {
   return (
-    <article className="group rounded-xl border border-black/[.08] dark:border-white/[.145] overflow-hidden bg-white/60 dark:bg-black/20 backdrop-blur">
-      <div className="relative aspect-[4/3] bg-[#f2f2f2] dark:bg-[#111]">
-        <Image
-          src={toDirectImageUrl(image) || "/vercel.svg"}
-          alt={title}
-          fill
-          className="object-contain p-6"
-        />
-      </div>
-      <div className="p-4 flex flex-col gap-1">
-        <h3 className="text-sm font-semibold tracking-[-0.01em]">{title}</h3>
-        <p className="text-xs text-black/60 dark:text-white/60">
-          {category ?? "Uncategorized"}
-        </p>
-      </div>
-    </article>
+    <Link href={`/dashboard/recipe/${id}`}>
+      <article className="group rounded-xl border border-black/[.08] dark:border-white/[.145] overflow-hidden bg-white/60 dark:bg-black/20 backdrop-blur hover:bg-white/80 dark:hover:bg-black/30 transition-all duration-200 cursor-pointer">
+        <div className="relative aspect-[4/3] bg-[#f2f2f2] dark:bg-[#111]">
+          <Image
+            src={toDirectImageUrl(image) || "/vercel.svg"}
+            alt={title}
+            fill
+            className="object-contain p-6"
+          />
+        </div>
+        <div className="p-4 flex flex-col gap-1">
+          <h3 className="text-sm font-semibold tracking-[-0.01em]">{title}</h3>
+          <p className="text-xs text-black/60 dark:text-white/60">
+            {category ?? "Uncategorized"}
+          </p>
+        </div>
+      </article>
+    </Link>
   );
 }
 
@@ -233,6 +237,7 @@ export default function DashboardClient({
                   ) => (
                     <RecipeCard
                       key={r.id}
+                      id={r.id}
                       title={r.title ?? "Untitled"}
                       category={r.category}
                       image={r.image_url}

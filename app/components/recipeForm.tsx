@@ -9,7 +9,7 @@ interface RecipeFormData {
   description: string;
   ingredients: string;
   cooking_time: number;
-  difficulty: string[];
+  difficulty: string;
   category: string;
   instructions: string[];
   image_url: string;
@@ -31,6 +31,7 @@ interface RecipeFormProps {
   onSubmit: (data: RecipeFormData) => Promise<void>;
   submitButtonText: string;
   isSubmitting?: boolean;
+  cancelHref?: string;
 }
 
 const DIFFICULTY_OPTIONS = ["Easy", "Medium", "Hard"];
@@ -47,13 +48,14 @@ export default function RecipeForm({
   onSubmit,
   submitButtonText,
   isSubmitting = false,
+  cancelHref,
 }: RecipeFormProps) {
   const [formData, setFormData] = useState<RecipeFormData>({
     title: "",
     description: "",
     ingredients: "",
     cooking_time: 0,
-    difficulty: [],
+    difficulty: "",
     category: "",
     instructions: [""],
     image_url: "",
@@ -69,7 +71,7 @@ export default function RecipeForm({
         description: initialData.description || "",
         ingredients: initialData.ingredients || "",
         cooking_time: initialData.cooking_time || 0,
-        difficulty: initialData.difficulty || [],
+        difficulty: initialData.difficulty || "",
         category: initialData.category || "",
         instructions:
           initialData.instructions && initialData.instructions.length > 0
@@ -91,8 +93,8 @@ export default function RecipeForm({
     if (!formData.cooking_time || formData.cooking_time <= 0) {
       newErrors.cooking_time = "Cooking time must be greater than 0";
     }
-    if (formData.difficulty.length === 0)
-      newErrors.difficulty = "Select at least one difficulty level";
+    if (!formData.difficulty)
+      newErrors.difficulty = "Please select a difficulty level";
     if (!formData.category) newErrors.category = "Category is required";
     if (
       formData.instructions.filter((instruction) => instruction.trim())
@@ -114,14 +116,6 @@ export default function RecipeForm({
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  };
-
-  const handleDifficultyChange = (difficulty: string, checked: boolean) => {
-    const newDifficulty = checked
-      ? [...formData.difficulty, difficulty]
-      : formData.difficulty.filter((d) => d !== difficulty);
-
-    handleInputChange("difficulty", newDifficulty);
   };
 
   const handleInstructionChange = (index: number, value: string) => {
@@ -295,23 +289,53 @@ export default function RecipeForm({
 
       {/* Difficulty */}
       <div>
-        <label className="block text-sm font-medium mb-2">
+        <label htmlFor="difficulty" className="block text-sm font-medium mb-2">
           Difficulty Level *
         </label>
-        <div className="flex flex-wrap gap-4">
-          {DIFFICULTY_OPTIONS.map((difficulty) => (
-            <label key={difficulty} className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.difficulty.includes(difficulty)}
-                onChange={(e) =>
-                  handleDifficultyChange(difficulty, e.target.checked)
-                }
-                className="mr-2"
+        <div className="relative">
+          <select
+            id="difficulty"
+            value={formData.difficulty}
+            onChange={(e) => handleInputChange("difficulty", e.target.value)}
+            className={`w-full h-11 rounded-lg px-4 pr-10 text-sm bg-white dark:bg-black/30 border backdrop-blur-sm transition-all duration-200 ${
+              errors.difficulty
+                ? "border-red-500 focus:ring-red-500/20"
+                : "border-black/[.08] dark:border-white/[.145] hover:border-black/20 dark:hover:border-white/30 focus:border-black/30 dark:focus:border-white/40"
+            } outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20 appearance-none cursor-pointer`}
+          >
+            <option
+              value=""
+              disabled
+              className="text-black/50 dark:text-white/50"
+            >
+              Select difficulty
+            </option>
+            {DIFFICULTY_OPTIONS.map((difficulty) => (
+              <option
+                key={difficulty}
+                value={difficulty}
+                className="bg-white dark:bg-black text-black dark:text-white"
+              >
+                {difficulty}
+              </option>
+            ))}
+          </select>
+          {/* Custom dropdown arrow */}
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg
+              className="w-4 h-4 text-black/60 dark:text-white/60"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
               />
-              {difficulty}
-            </label>
-          ))}
+            </svg>
+          </div>
         </div>
         {errors.difficulty && (
           <p className="text-sm text-red-600 dark:text-red-400 mt-1">
@@ -413,7 +437,7 @@ export default function RecipeForm({
         </button>
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push(cancelHref || "/dashboard")}
           className="h-11 px-6 rounded-full border border-black/[.08] dark:border-white/[.145] text-sm font-medium hover:bg-[#f2f2f2] dark:hover:bg-[#111]"
         >
           Cancel

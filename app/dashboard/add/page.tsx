@@ -13,7 +13,7 @@ interface RecipeFormData {
   description: string;
   ingredients: string;
   cooking_time: number;
-  difficulty: string[];
+  difficulty: string;
   category: string;
   instructions: string[];
   image_url: string;
@@ -53,7 +53,7 @@ export default function AddRecipe() {
         description: formData.description.trim(),
         ingredients: formData.ingredients.trim(),
         coocking_time: formData.cooking_time,
-        difficulty: formData.difficulty,
+        difficulty: [formData.difficulty], // Convert single string to array for database
         category: formData.category,
         instructions: filteredInstructions,
         image_url: formData.image_url.trim() || null,
@@ -68,7 +68,12 @@ export default function AddRecipe() {
 
       if (error) {
         console.error("Error creating recipe:", error);
-        alert("Failed to create recipe: " + error.message);
+        const errorMessage =
+          error.message ||
+          error.details ||
+          error.hint ||
+          "Unknown error occurred";
+        alert("Failed to create recipe: " + errorMessage);
         return;
       }
 
