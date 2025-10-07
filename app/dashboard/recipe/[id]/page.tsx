@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabase } from "@/src/lib/supabase/client";
+import { useToast } from "@/src/contexts/ToastContext";
+import { useDialog } from "@/src/contexts/DialogContext";
 import MainHeader from "../../../components/mainHeader";
 import Footer from "../../../components/footer";
 
@@ -36,9 +38,12 @@ export default function RecipeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const params = useParams();
   const router = useRouter();
   const supabase = getBrowserSupabase();
+  const { addToast } = useToast();
+  const { showDialog } = useDialog();
 
   useEffect(() => {
     const fetchRecipeAndUser = async () => {
@@ -81,6 +86,69 @@ export default function RecipeDetail() {
 
     fetchRecipeAndUser();
   }, [params.id, supabase]);
+
+  const handleDeleteRecipe = async () => {
+    if (!recipe || !currentUser) return;
+
+    // Show custom confirmation dialog
+    showDialog({
+      type: "confirm",
+      variant: "danger",
+      title: "Delete Recipe",
+      message: `Are you sure you want to delete "${
+        recipe.title || "this recipe"
+      }"? This action cannot be undone.`,
+      confirmText: "Delete Recipe",
+      cancelText: "Keep Recipe",
+      onConfirm: async () => {
+        setIsDeleting(true);
+
+        try {
+          // Delete the recipe from Supabase
+          const { error } = await supabase
+            .from("recipe")
+            .delete()
+            .eq("id", recipe.id)
+            .eq("user_id", currentUser.id);
+
+          if (error) {
+            console.error("Error deleting recipe:", error);
+            addToast({
+              type: "error",
+              title: "Delete Failed",
+              message: `Failed to delete recipe: ${error.message}`,
+              persistent: true,
+            });
+            return;
+          }
+
+          // Success - show toast and redirect
+          addToast({
+            type: "success",
+            title: "Recipe Deleted",
+            message: `"${
+              recipe.title || "Recipe"
+            }" has been successfully deleted.`,
+          });
+
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 1500);
+        } catch (error) {
+          console.error("Unexpected error during deletion:", error);
+          addToast({
+            type: "error",
+            title: "Delete Failed",
+            message: "An unexpected error occurred while deleting the recipe.",
+            persistent: true,
+          });
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -260,19 +328,15 @@ export default function RecipeDetail() {
                       Edit Recipe
                     </button>
                     <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "Are you sure you want to delete this recipe?"
-                          )
-                        ) {
-                          // TODO: Implement delete functionality
-                          console.log("Delete recipe:", recipe.id);
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      onClick={handleDeleteRecipe}
+                      disabled={isDeleting}
+                      className={`${
+                        isDeleting
+                          ? "text-red-400 cursor-not-allowed"
+                          : "text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      } transition-colors`}
                     >
-                      Delete
+                      {isDeleting ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 )}

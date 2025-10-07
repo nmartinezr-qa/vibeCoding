@@ -141,7 +141,7 @@ export default function DashboardClient({
         {/* CTA */}
         <div className="mt-4">
           <a
-            href="/share"
+            href="/dashboard/add"
             className="inline-flex items-center justify-center h-11 px-5 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90"
           >
             Start sharing

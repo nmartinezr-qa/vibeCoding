@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/src/lib/supabase/client";
 import MainHeader from "../../components/mainHeader";
-import Sidebar from "../../components/sidebar";
 import Footer from "../../components/footer";
 import RecipeForm from "../../components/recipeForm";
 
@@ -20,7 +19,6 @@ interface RecipeFormData {
 }
 
 export default function AddRecipe() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const supabase = getBrowserSupabase();
@@ -89,39 +87,51 @@ export default function AddRecipe() {
   };
 
   return (
-    <div className="font-sans min-h-screen flex">
-      {/* Sidebar */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
+    <div className="font-sans min-h-screen">
+      {/* Header */}
+      <MainHeader fixed />
 
       {/* Main content */}
-      <div className="flex-1 transition-all duration-300">
-        {/* Header */}
-        <MainHeader offsetLeft={sidebarOpen ? "18rem" : "6rem"} fixed />
+      <main className="mx-auto max-w-4xl px-6 py-10 sm:py-14 pt-[4rem]">
+        {/* Back to Dashboard Button */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="inline-flex items-center gap-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors mb-6"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to Dashboard
+          </button>
 
-        {/* Main */}
-        <main className="mx-auto max-w-4xl px-6 py-10 sm:py-14 pt-[4rem]">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight mb-2">
-              Add New Recipe
-            </h1>
-            <p className="text-sm text-black/70 dark:text-white/70">
-              Share your favorite recipe with the community
-            </p>
-          </div>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">
+            Add New Recipe
+          </h1>
+          <p className="text-sm text-black/70 dark:text-white/70">
+            Share your favorite recipe with the community
+          </p>
+        </div>
 
-          <RecipeForm
-            onSubmit={handleRecipeSubmit}
-            submitButtonText="Create Recipe"
-            isSubmitting={isSubmitting}
-          />
-        </main>
+        <RecipeForm
+          onSubmit={handleRecipeSubmit}
+          submitButtonText="Create Recipe"
+          isSubmitting={isSubmitting}
+        />
+      </main>
 
-        {/* Footer */}
-        <Footer />
-      </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
