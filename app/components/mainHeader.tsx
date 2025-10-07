@@ -23,9 +23,28 @@ export default function MainHeader({
       try {
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession();
-        setIsAuthenticated(!!session?.user);
-      } catch {
+
+        if (error) {
+          console.error("❌ Auth check error:", error.message);
+
+          // Handle refresh token errors specifically
+          if (
+            error.message.includes("Refresh Token Not Found") ||
+            error.message.includes("Invalid Refresh Token")
+          ) {
+            console.warn("🔄 Refresh token expired, redirecting to login");
+            setIsAuthenticated(false);
+            // Don't redirect automatically, let user decide
+          } else {
+            setIsAuthenticated(false);
+          }
+        } else {
+          setIsAuthenticated(!!session?.user);
+        }
+      } catch (error) {
+        console.error("❌ Unexpected auth error:", error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -36,7 +55,15 @@ export default function MainHeader({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("🔄 Auth state changed in header:", event);
+
+      if (event === "TOKEN_REFRESHED") {
+        console.log("✅ Token refreshed in header");
+      } else if (event === "SIGNED_OUT") {
+        console.log("👋 User signed out in header");
+      }
+
       setIsAuthenticated(!!session?.user);
       setIsLoading(false);
     });

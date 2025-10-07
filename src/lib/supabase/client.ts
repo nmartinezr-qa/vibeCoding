@@ -5,6 +5,50 @@ import type { Database } from "@/src/types/database.types";
 let browserClient: ReturnType<typeof createClient<Database>> | null =
   null as any;
 
+// Utility function to clear expired sessions
+export async function clearExpiredSession() {
+  if (typeof window !== "undefined") {
+    try {
+      const keysToRemove = [
+        "sb-access-token",
+        "sb-refresh-token",
+        "supabase.auth.token",
+      ];
+
+      keysToRemove.forEach((key) => {
+        window.localStorage.removeItem(key);
+      });
+
+      console.log("🧹 Cleared expired session data");
+    } catch (error) {
+      console.warn("Failed to clear session data:", error);
+    }
+  }
+}
+
+// Utility function to check if session is valid
+export async function validateSession(): Promise<boolean> {
+  try {
+    const supabase = getBrowserSupabase();
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      if (
+        error.message.includes("Refresh Token Not Found") ||
+        error.message.includes("Invalid Refresh Token")
+      ) {
+        await clearExpiredSession();
+        return false;
+      }
+    }
+
+    return !!data.session?.user;
+  } catch (error) {
+    console.error("Session validation error:", error);
+    return false;
+  }
+}
+
 export function getBrowserSupabase() {
   if (browserClient) return browserClient;
 
@@ -20,19 +64,32 @@ export function getBrowserSupabase() {
         storage: {
           getItem: (key: string) => {
             if (typeof window !== "undefined") {
-              const value = window.localStorage.getItem(key);
-              return value;
+              try {
+                const value = window.localStorage.getItem(key);
+                return value;
+              } catch (error) {
+                console.warn("Failed to get item from localStorage:", error);
+                return null;
+              }
             }
             return null;
           },
           setItem: (key: string, value: string) => {
             if (typeof window !== "undefined") {
-              window.localStorage.setItem(key, value);
+              try {
+                window.localStorage.setItem(key, value);
+              } catch (error) {
+                console.warn("Failed to set item in localStorage:", error);
+              }
             }
           },
           removeItem: (key: string) => {
             if (typeof window !== "undefined") {
-              window.localStorage.removeItem(key);
+              try {
+                window.localStorage.removeItem(key);
+              } catch (error) {
+                console.warn("Failed to remove item from localStorage:", error);
+              }
             }
           },
         },

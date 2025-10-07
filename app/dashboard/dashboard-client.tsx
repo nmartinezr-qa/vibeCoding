@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import type { Recipe } from "../../src/types/database.types";
 import Footer from "../components/footer";
@@ -55,6 +55,40 @@ export default function DashboardClient({
   activeCategory?: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter recipes based on search query and active category
+  const filteredRecipes = useMemo(() => {
+    if (!recipes) return [];
+
+    let filtered = recipes;
+
+    // Filter by category if not "All"
+    if (activeCategory && activeCategory !== "All") {
+      filtered = filtered.filter(
+        (recipe) =>
+          recipe.category?.toLowerCase() === activeCategory.toLowerCase()
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (recipe) =>
+          recipe.title?.toLowerCase().includes(query) ||
+          recipe.category?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [recipes, activeCategory, searchQuery]);
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Search is handled automatically by the useMemo filter
+    // This prevents page reload
+  };
 
   return (
     <div className="font-sans min-h-screen flex">
@@ -88,7 +122,12 @@ export default function DashboardClient({
             </p>
 
             {/* Search */}
-            <form className="mt-6" role="search" aria-label="Search recipes">
+            <form
+              className="mt-6"
+              role="search"
+              aria-label="Search recipes"
+              onSubmit={handleSearchSubmit}
+            >
               <div className="flex items-center gap-2">
                 <label htmlFor="search" className="sr-only">
                   Search recipes
@@ -98,6 +137,8 @@ export default function DashboardClient({
                   name="search"
                   type="search"
                   placeholder="Search recipes, ingredients..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full sm:w-[480px] h-11 rounded-full px-4 text-sm bg-white dark:bg-black/30 border border-black/[.08] dark:border-white/[.145] outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
                 />
                 <button
@@ -178,9 +219,15 @@ export default function DashboardClient({
               <p className="text-sm text-black/60 dark:text-white/60">
                 No recipes yet. Be the first to share!
               </p>
+            ) : filteredRecipes.length === 0 ? (
+              <p className="text-sm text-black/60 dark:text-white/60">
+                {searchQuery || (activeCategory && activeCategory !== "All")
+                  ? "No recipes match your search criteria."
+                  : "No recipes yet. Be the first to share!"}
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {recipes.map(
+                {filteredRecipes.map(
                   (
                     r: Pick<Recipe, "title" | "category" | "id" | "image_url">
                   ) => (
