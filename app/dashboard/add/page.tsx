@@ -91,30 +91,32 @@ export default function AddRecipe() {
       {/* Header */}
       <MainHeader fixed />
 
+      {/* Back to Dashboard Button - Top Left */}
+      <div className="fixed top-20 left-6 z-40">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="inline-flex items-center gap-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors bg-white/80 dark:bg-black/20 backdrop-blur-sm px-3 py-2 rounded-lg border border-black/10 dark:border-white/20"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Dashboard
+        </button>
+      </div>
+
       {/* Main content */}
       <main className="mx-auto max-w-4xl px-6 py-10 sm:py-14 pt-[4rem]">
-        {/* Back to Dashboard Button */}
         <div className="mb-8">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="inline-flex items-center gap-2 text-sm text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors mb-6"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to Dashboard
-          </button>
-
           <h1 className="text-3xl font-semibold tracking-tight mb-2">
             Add New Recipe
           </h1>
