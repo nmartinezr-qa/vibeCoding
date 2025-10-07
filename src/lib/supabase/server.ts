@@ -28,6 +28,12 @@ export async function getServerSupabase() {
           }
         },
       },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: true,
+        detectSessionInUrl: false,
+        flowType: "pkce",
+      },
     }
   );
 

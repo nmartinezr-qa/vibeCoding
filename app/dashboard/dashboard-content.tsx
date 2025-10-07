@@ -17,14 +17,19 @@ export default async function DashboardContent(props: {
   const sp = await props.searchParams;
   const activeCategory =
     typeof sp.category === "string" ? sp.category : undefined;
+  const showMyRecipes = sp["my-recipes"] === "true";
 
   // Fetch recipes from Supabase with optional category filtering
   let query = supabase
     .from("recipe")
-    .select("id,title,category,image_url,created_at");
+    .select("id,title,category,image_url,created_at,user_id");
 
   if (activeCategory && activeCategory !== "All") {
     query = query.eq("category", activeCategory);
+  }
+
+  if (showMyRecipes) {
+    query = query.eq("user_id", user.id);
   }
 
   const { data: recipes, error } = await query

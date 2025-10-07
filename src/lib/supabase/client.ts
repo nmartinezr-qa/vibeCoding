@@ -35,7 +35,8 @@ export async function validateSession(): Promise<boolean> {
     if (error) {
       if (
         error.message.includes("Refresh Token Not Found") ||
-        error.message.includes("Invalid Refresh Token")
+        error.message.includes("Invalid Refresh Token") ||
+        error.message.includes("over_request_rate_limit")
       ) {
         await clearExpiredSession();
         return false;
@@ -58,7 +59,7 @@ export function getBrowserSupabase() {
     {
       auth: {
         persistSession: true,
-        autoRefreshToken: true,
+        autoRefreshToken: false,
         detectSessionInUrl: true,
         flowType: "pkce",
         storage: {

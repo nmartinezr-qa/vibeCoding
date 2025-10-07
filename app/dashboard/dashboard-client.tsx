@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Recipe } from "../../src/types/database.types";
 import Footer from "../components/footer";
 import Sidebar from "../components/sidebar";
@@ -13,6 +14,7 @@ interface RecipeCardProps {
   title: string;
   category: string | null;
   image?: string | null;
+  user_id?: string | null;
 }
 
 function toDirectImageUrl(url?: string | null) {
@@ -60,6 +62,8 @@ export default function DashboardClient({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const isMyRecipesActive = searchParams.get("my-recipes") === "true";
 
   // Filter recipes based on search query and active category
   const filteredRecipes = useMemo(() => {
@@ -173,36 +177,65 @@ export default function DashboardClient({
             className="mt-8"
           >
             <ul className="flex flex-wrap gap-2">
-              {[
-                "All",
-                "Appetizers",
-                "Main",
-                "Desserts",
-                "Breakfast",
-                "Snack",
-              ].map((c) => {
-                const isActive = (activeCategory ?? "All") === c;
-                const href =
-                  c === "All"
-                    ? "/dashboard"
-                    : `/dashboard?category=${encodeURIComponent(c)}`;
-                return (
-                  <li key={c}>
-                    <a
-                      href={href}
-                      aria-current={isActive ? "page" : undefined}
-                      className={
-                        `px-3 h-8 rounded-full text-xs inline-flex items-center justify-center font-medium ` +
-                        (isActive
-                          ? `bg-foreground text-background border border-transparent shadow-sm`
-                          : `border border-black/[.08] dark:border-white/[.145] text-black/80 dark:text-white/80 hover:bg-[#f2f2f2] dark:hover:bg-[#111]`)
-                      }
-                    >
-                      {c}
-                    </a>
-                  </li>
-                );
-              })}
+              {/* All filter */}
+              <li>
+                <a
+                  href="/dashboard"
+                  aria-current={
+                    (activeCategory ?? "All") === "All" && !isMyRecipesActive
+                      ? "page"
+                      : undefined
+                  }
+                  className={
+                    `px-3 h-8 rounded-full text-xs inline-flex items-center justify-center font-medium ` +
+                    ((activeCategory ?? "All") === "All" && !isMyRecipesActive
+                      ? `bg-foreground text-background border border-transparent shadow-sm`
+                      : `border border-black/[.08] dark:border-white/[.145] text-black/80 dark:text-white/80 hover:bg-[#f2f2f2] dark:hover:bg-[#111]`)
+                  }
+                >
+                  All
+                </a>
+              </li>
+
+              {/* Mis Recetas filter */}
+              <li>
+                <a
+                  href="/dashboard?my-recipes=true"
+                  aria-current={isMyRecipesActive ? "page" : undefined}
+                  className={
+                    `px-3 h-8 rounded-full text-xs inline-flex items-center justify-center font-medium ` +
+                    (isMyRecipesActive
+                      ? `bg-foreground text-background border border-transparent shadow-sm`
+                      : `border border-black/[.08] dark:border-white/[.145] text-black/80 dark:text-white/80 hover:bg-[#f2f2f2] dark:hover:bg-[#111]`)
+                  }
+                >
+                  Mis Recetas
+                </a>
+              </li>
+
+              {/* Other category filters */}
+              {["Appetizers", "Main", "Desserts", "Breakfast", "Snack"].map(
+                (c) => {
+                  const isActive = (activeCategory ?? "All") === c;
+                  const href = `/dashboard?category=${encodeURIComponent(c)}`;
+                  return (
+                    <li key={c}>
+                      <a
+                        href={href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={
+                          `px-3 h-8 rounded-full text-xs inline-flex items-center justify-center font-medium ` +
+                          (isActive
+                            ? `bg-foreground text-background border border-transparent shadow-sm`
+                            : `border border-black/[.08] dark:border-white/[.145] text-black/80 dark:text-white/80 hover:bg-[#f2f2f2] dark:hover:bg-[#111]`)
+                        }
+                      >
+                        {c}
+                      </a>
+                    </li>
+                  );
+                }
+              )}
             </ul>
           </section>
 

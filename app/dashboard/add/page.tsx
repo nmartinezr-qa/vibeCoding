@@ -63,8 +63,7 @@ export default function AddRecipe() {
       const { data, error } = await supabase
         .from("recipe")
         .insert([recipeData])
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error("Error creating recipe:", error);
