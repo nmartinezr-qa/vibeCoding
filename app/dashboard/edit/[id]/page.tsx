@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/src/lib/supabase/client";
+import { useToast } from "@/src/contexts/ToastContext";
 import MainHeader from "../../../components/mainHeader";
 import Sidebar from "../../../components/sidebar";
 import Footer from "../../../components/footer";
@@ -42,6 +43,7 @@ export default function EditRecipe() {
   const params = useParams();
   const router = useRouter();
   const supabase = getBrowserSupabase();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -87,7 +89,12 @@ export default function EditRecipe() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        alert("You must be logged in to edit recipes");
+        addToast({
+          type: "error",
+          title: "Authentication Required",
+          message: "You must be logged in to edit recipes",
+          persistent: true,
+        });
         router.push("/login");
         return;
       }
@@ -127,13 +134,23 @@ export default function EditRecipe() {
 
       if (accessError) {
         console.error("❌ Access check failed:", accessError);
-        alert("Access check failed: " + accessError.message);
+        addToast({
+          type: "error",
+          title: "Access Check Failed",
+          message: accessError.message,
+          persistent: true,
+        });
         return;
       }
 
       if (!accessCheck || accessCheck.length === 0) {
         console.error("❌ User does not have access to this recipe");
-        alert("You don't have permission to edit this recipe");
+        addToast({
+          type: "error",
+          title: "Permission Denied",
+          message: "You don't have permission to edit this recipe",
+          persistent: true,
+        });
         return;
       }
 
@@ -151,7 +168,12 @@ export default function EditRecipe() {
 
       if (fetchError) {
         console.error("❌ Cannot fetch current recipe:", fetchError);
-        alert("Cannot access recipe: " + fetchError.message);
+        addToast({
+          type: "error",
+          title: "Recipe Access Error",
+          message: "Cannot access recipe: " + fetchError.message,
+          persistent: true,
+        });
         return;
       }
 
@@ -205,12 +227,23 @@ export default function EditRecipe() {
 
         if (insertError) {
           console.error("❌ Insert also failed:", insertError);
-          alert("Both update and insert failed. Error: " + insertError.message);
+          addToast({
+            type: "error",
+            title: "Save Failed",
+            message:
+              "Both update and insert failed. Error: " + insertError.message,
+            persistent: true,
+          });
           return;
         }
 
         console.log("🎉 New recipe created as workaround:", newRecipe);
-        alert("Recipe saved as new entry (update failed)");
+        addToast({
+          type: "warning",
+          title: "Recipe Saved as New Entry",
+          message:
+            "Original recipe couldn't be updated, but saved as new entry",
+        });
         setTimeout(() => {
           router.push("/dashboard?my-recipes=true");
         }, 500);
@@ -219,14 +252,22 @@ export default function EditRecipe() {
 
       if (!data || data.length === 0) {
         console.error("❌ RLS Policy is blocking update - no rows affected");
-        alert(
-          "Update blocked by security policy. Please contact administrator."
-        );
+        addToast({
+          type: "error",
+          title: "Update Blocked",
+          message:
+            "Update blocked by security policy. Please contact administrator.",
+          persistent: true,
+        });
         return;
       }
 
       console.log("🎉 Recipe updated successfully:", data[0]);
-      alert("Recipe updated successfully!");
+      addToast({
+        type: "success",
+        title: "Recipe Updated Successfully!",
+        message: "Your recipe has been updated and saved.",
+      });
       setTimeout(() => {
         router.push("/dashboard?my-recipes=true");
       }, 500);
@@ -237,7 +278,12 @@ export default function EditRecipe() {
         "Error message:",
         error instanceof Error ? error.message : error
       );
-      alert("An unexpected error occurred. Please try again.");
+      addToast({
+        type: "error",
+        title: "Unexpected Error",
+        message: "An unexpected error occurred. Please try again.",
+        persistent: true,
+      });
     } finally {
       setIsSubmitting(false);
     }

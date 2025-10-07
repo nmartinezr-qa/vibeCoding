@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/src/lib/supabase/client";
+import { useToast } from "@/src/contexts/ToastContext";
 
 interface RecipeFormData {
   title: string;
@@ -62,6 +63,7 @@ export default function RecipeForm({
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const router = useRouter();
+  const { addToast } = useToast();
 
   // Initialize form data when initialData changes
   useEffect(() => {
