@@ -70,7 +70,7 @@ export default function DashboardClient({
         <MainHeader offsetLeft={sidebarOpen ? "18rem" : "6rem"} fixed />
 
         {/* Main */}
-        <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14 pt-20">
+        <main className="mx-auto max-w-6xl px-6 py-10 sm:py-14 pt-[4rem]">
           {/* Hero */}
           <section
             aria-labelledby="hero-heading"

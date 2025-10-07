@@ -23,19 +23,9 @@ export default function MainHeader({
       try {
         const {
           data: { session },
-          error,
         } = await supabase.auth.getSession();
-
-        console.log("🔍 Current session check:", {
-          hasSession: !!session,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email,
-          error: error?.message,
-        });
-
         setIsAuthenticated(!!session?.user);
-      } catch (error) {
-        console.error("❌ Error checking auth:", error);
+      } catch {
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -56,13 +46,8 @@ export default function MainHeader({
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Logout error:", error);
-      } else {
-        console.log("✅ Logout successful");
-        router.push("/");
-      }
+      await supabase.auth.signOut();
+      router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -72,7 +57,7 @@ export default function MainHeader({
     <header
       className={`
         ${fixed ? "fixed top-0" : "relative"} 
-        right-0 h-14 flex items-center justify-between px-6 
+        right-0 h-16 flex items-center justify-between px-6 
         border-b border-black/10 dark:border-white/10 
         bg-white dark:bg-black z-50 transition-all duration-300
       `}
