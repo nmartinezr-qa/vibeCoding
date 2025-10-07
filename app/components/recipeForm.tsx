@@ -429,20 +429,20 @@ export default function RecipeForm({
       </div>
 
       {/* Submit Button */}
-      <div className="flex gap-4">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="h-11 px-6 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Saving..." : submitButtonText}
-        </button>
+      <div className="flex justify-end gap-4">
         <button
           type="button"
           onClick={() => router.push(cancelHref || "/dashboard")}
           className="h-11 px-6 rounded-full border border-black/[.08] dark:border-white/[.145] text-sm font-medium hover:bg-[#f2f2f2] dark:hover:bg-[#111]"
         >
           Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-11 px-6 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? "Saving..." : submitButtonText}
         </button>
       </div>
     </form>
